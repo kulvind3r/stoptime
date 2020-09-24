@@ -13,7 +13,6 @@ public class MainActivity extends AppCompatActivity {
 
     Chronometer appChronometer;
     CountDownTimer appTimer;
-
     Long currentTime;
     Button button;
 
@@ -28,11 +27,10 @@ public class MainActivity extends AppCompatActivity {
         appChronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
             public void onChronometerTick(Chronometer chronometer) {
-                long time = SystemClock.elapsedRealtime() - chronometer.getBase();
-                int hour   = (int)(time /3600000);
-                int minute = (int)(time - hour*3600000)/60000;
-                int seconds= (int)(time - hour*3600000- minute*60000)/1000 ;
-                String t = (hour < 10 ? "0"+hour: hour)+":"+(minute < 10 ? "0"+minute: minute)+":"+ (seconds < 10 ? "0"+seconds: seconds);
+                long timeInMillis = SystemClock.elapsedRealtime() - chronometer.getBase();
+
+                String t = FormatTime(timeInMillis);
+
                 chronometer.setText(t);
             }
         });
@@ -53,7 +51,36 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    long textToTime () {
+    private String FormatTime(long timeInMillis) {
+        int hour = (int) (timeInMillis / 3600000);
+        int minute = (int) (timeInMillis - hour * 3600000) / 60000;
+        int seconds = (int) (timeInMillis - hour * 3600000 - minute * 60000) / 1000;
+        return (hour < 10 ? "0" + hour : hour) + ":" + (minute < 10 ? "0" + minute : minute) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+    }
+
+    private void StopTimer() {
+
+        if (appTimer != null)
+            appTimer.cancel();
+
+        button = (Button) findViewById(R.id.timerStart);
+        button.setEnabled(true);
+
+        button = (Button) findViewById(R.id.timerStop);
+        button.setEnabled(false);
+    }
+
+    private void StopWatch() {
+        appChronometer.stop();
+
+        button = (Button) findViewById(R.id.watchStop);
+        button.setEnabled(false);
+
+        button = (Button) findViewById(R.id.watchStart);
+        button.setEnabled(true);
+    }
+
+    private long textToTime () {
 
         String timeString = (String) appChronometer.getText();
 
@@ -117,16 +144,16 @@ public class MainActivity extends AppCompatActivity {
             appTimer = new CountDownTimer(currentTime,1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
-                    int hour   = (int)(millisUntilFinished /3600000);
-                    int minute = (int)(millisUntilFinished - hour*3600000)/60000;
-                    int seconds= (int)(millisUntilFinished - hour*3600000- minute*60000)/1000 ;
-                    String t = (hour < 10 ? "0"+hour: hour)+":"+(minute < 10 ? "0"+minute: minute)+":"+ (seconds < 10 ? "0"+seconds: seconds);
+
+                    String t = FormatTime(millisUntilFinished);
+
                     appChronometer.setText(t);
                 }
 
                 @Override
                 public void onFinish() {
                     appChronometer.setText("00:00:00");
+                    StopTimer();
                 }
             };
 
@@ -140,27 +167,5 @@ public class MainActivity extends AppCompatActivity {
             StopTimer();
         }
     };
-
-    private void StopTimer() {
-
-        if (appTimer != null)
-            appTimer.cancel();
-
-        button = (Button) findViewById(R.id.timerStart);
-        button.setEnabled(true);
-
-        button = (Button) findViewById(R.id.timerStop);
-        button.setEnabled(false);
-    }
-
-    private void StopWatch() {
-        appChronometer.stop();
-
-        button = (Button) findViewById(R.id.watchStop);
-        button.setEnabled(false);
-
-        button = (Button) findViewById(R.id.watchStart);
-        button.setEnabled(true);
-    }
 
 }
