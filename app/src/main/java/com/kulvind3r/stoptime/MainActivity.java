@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
             public void onChronometerTick(Chronometer chronometer) {
                 long timeInMillis = SystemClock.elapsedRealtime() - chronometer.getBase();
 
-                String t = FormatTime(timeInMillis);
+                String t = formatTime(timeInMillis);
 
                 chronometer.setText(t);
             }
@@ -51,14 +51,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private String FormatTime(long timeInMillis) {
+    private String formatTime(long timeInMillis) {
         int hour = (int) (timeInMillis / 3600000);
         int minute = (int) (timeInMillis - hour * 3600000) / 60000;
         int seconds = (int) (timeInMillis - hour * 3600000 - minute * 60000) / 1000;
         return (hour < 10 ? "0" + hour : hour) + ":" + (minute < 10 ? "0" + minute : minute) + ":" + (seconds < 10 ? "0" + seconds : seconds);
     }
 
-    private void StopTimer() {
+    private void stopTimer() {
 
         if (appTimer != null)
             appTimer.cancel();
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         button.setEnabled(false);
     }
 
-    private void StopWatch() {
+    private void stopWatch() {
         appChronometer.stop();
 
         button = (Button) findViewById(R.id.watchStop);
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
 
-            StopTimer();
+            stopTimer();
 
             button = (Button) findViewById(R.id.watchStart);
             button.setEnabled(false);
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener appWatchStopListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            StopWatch();
+            stopWatch();
         }
     };
 
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
 
-            StopWatch();
+            stopWatch();
 
             button = (Button) findViewById(R.id.timerStart);
             button.setEnabled(false);
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onTick(long millisUntilFinished) {
 
-                    String t = FormatTime(millisUntilFinished);
+                    String t = formatTime(millisUntilFinished);
 
                     appChronometer.setText(t);
                 }
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onFinish() {
                     appChronometer.setText("00:00:00");
-                    StopTimer();
+                    stopTimer();
                 }
             };
 
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener appTimerStopListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            StopTimer();
+            stopTimer();
         }
     };
 
