@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,7 +14,19 @@ public class MainActivity extends AppCompatActivity {
     Chronometer appChronometer;
     CountDownTimer appTimer;
     Long currentTime;
-    Button button;
+
+    ImageView imageViewStartStopWatch;
+    ImageView imageViewStartStopTimer;
+
+    private AppStatus appWatchStatus = AppStatus.WATCH_STOPPED;
+    private AppStatus appTimerStatus = AppStatus.TIMER_STOPPED;
+
+    private enum AppStatus {
+        WATCH_STARTED,
+        WATCH_STOPPED,
+        TIMER_STARTED,
+        TIMER_STOPPED
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,17 +49,11 @@ public class MainActivity extends AppCompatActivity {
 
         appChronometer.setText("00:00:00");
 
-        button = (Button) findViewById(R.id.watchStart);
-        button.setOnClickListener(appWatchStartListener);
+        imageViewStartStopWatch = (ImageView) findViewById(R.id.startStopWatch);
+        imageViewStartStopWatch.setOnClickListener(appWatchStartStopListener);
 
-        button = (Button) findViewById(R.id.watchStop);
-        button.setOnClickListener(appWatchStopListener);
-
-        button = (Button) findViewById(R.id.timerStart);
-        button.setOnClickListener(appTimerStartListener);
-
-        button = (Button) findViewById(R.id.timerStop);
-        button.setOnClickListener(appTimerStopListener);
+        imageViewStartStopTimer = (ImageView) findViewById(R.id.startStopTimer);
+        imageViewStartStopTimer.setOnClickListener(appTimerStartStopListener);
 
     }
 
@@ -58,30 +64,7 @@ public class MainActivity extends AppCompatActivity {
         return (hour < 10 ? "0" + hour : hour) + ":" + (minute < 10 ? "0" + minute : minute) + ":" + (seconds < 10 ? "0" + seconds : seconds);
     }
 
-    private void stopTimer() {
-
-        if (appTimer != null)
-            appTimer.cancel();
-
-        button = (Button) findViewById(R.id.timerStart);
-        button.setEnabled(true);
-
-        button = (Button) findViewById(R.id.timerStop);
-        button.setEnabled(false);
-    }
-
-    private void stopWatch() {
-        appChronometer.stop();
-
-        button = (Button) findViewById(R.id.watchStop);
-        button.setEnabled(false);
-
-        button = (Button) findViewById(R.id.watchStart);
-        button.setEnabled(true);
-    }
-
     private long textToTime () {
-
         String timeString = (String) appChronometer.getText();
 
         String hoursString = timeString.split(":")[0].trim();
@@ -98,74 +81,76 @@ public class MainActivity extends AppCompatActivity {
         return milliseconds;
     }
 
-    View.OnClickListener appWatchStartListener = new View.OnClickListener() {
+    private void startTimer() {
+        appTimer = new CountDownTimer(currentTime,1000) {
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                String t = formatTime(millisUntilFinished);
+                appChronometer.setText(t);
+            }
+
+            @Override
+            public void onFinish() {
+                appChronometer.setText("00:00:00");
+                stopTimer();
+            }
+        };
+
+        appTimer.start();
+
+        imageViewStartStopTimer.setImageResource(R.drawable.icon_stop);
+        appTimerStatus = AppStatus.TIMER_STARTED;
+    }
+
+    private void stopTimer() {
+        if (appTimer != null)
+            appTimer.cancel();
+
+        imageViewStartStopTimer.setImageResource(R.drawable.icon_start);
+        appTimerStatus = AppStatus.TIMER_STOPPED;
+    }
+
+    private void startWatch() {
+        appChronometer.setBase(SystemClock.elapsedRealtime() - currentTime);
+        appChronometer.start();
+
+        imageViewStartStopWatch.setImageResource(R.drawable.icon_stop);
+        appWatchStatus = AppStatus.WATCH_STARTED;
+    }
+
+    private void stopWatch() {
+        appChronometer.stop();
+
+        imageViewStartStopWatch.setImageResource(R.drawable.icon_start);
+        appWatchStatus = AppStatus.WATCH_STOPPED;
+    }
+
+    View.OnClickListener  appWatchStartStopListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-
-            stopTimer();
-
-            button = (Button) findViewById(R.id.watchStart);
-            button.setEnabled(false);
-
-            button = (Button) findViewById(R.id.watchStop);
-            button.setEnabled(true);
-
-            currentTime = textToTime();
-
-            appChronometer.setBase(SystemClock.elapsedRealtime() - currentTime);
-            appChronometer.start();
-
-
+            if (appWatchStatus == AppStatus.WATCH_STOPPED) {
+                stopTimer();
+                currentTime = textToTime();
+                startWatch();
+            }
+            else if (appWatchStatus == AppStatus.WATCH_STARTED) {
+                stopWatch();
+            }
         }
     };
 
-    View.OnClickListener appWatchStopListener = new View.OnClickListener() {
+    View.OnClickListener  appTimerStartStopListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            stopWatch();
+            if (appTimerStatus == AppStatus.TIMER_STOPPED) {
+                stopWatch();
+                currentTime = textToTime();
+                startTimer();
+            }
+            else if (appTimerStatus == AppStatus.TIMER_STARTED) {
+                stopTimer();
+            }
         }
     };
-
-
-    View.OnClickListener appTimerStartListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            stopWatch();
-
-            button = (Button) findViewById(R.id.timerStart);
-            button.setEnabled(false);
-
-            button = (Button) findViewById(R.id.timerStop);
-            button.setEnabled(true);
-
-            long currentTime = textToTime();
-
-            appTimer = new CountDownTimer(currentTime,1000) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-
-                    String t = formatTime(millisUntilFinished);
-
-                    appChronometer.setText(t);
-                }
-
-                @Override
-                public void onFinish() {
-                    appChronometer.setText("00:00:00");
-                    stopTimer();
-                }
-            };
-
-            appTimer.start();
-        }
-    };
-
-    View.OnClickListener appTimerStopListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            stopTimer();
-        }
-    };
-
 }
