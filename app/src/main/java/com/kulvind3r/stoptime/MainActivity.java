@@ -88,7 +88,12 @@ public class MainActivity extends AppCompatActivity {
 
         String time = Utils.formatTime(timeInMillis);
         utility.saveTimerState(time, SAVE_STATE_FILE_NAME);
-        progressBarCircle.setProgress((int)timeInMillis);
+
+        if (timeInMillis < progressBarCircle.getMax())
+            progressBarCircle.setProgress((int)timeInMillis);
+        else
+            progressBarCircle.setProgress(progressBarCircle.getMax());
+
         chronometer.setText(time);
     }
 
