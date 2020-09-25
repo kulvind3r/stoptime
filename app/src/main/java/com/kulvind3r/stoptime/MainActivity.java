@@ -1,5 +1,6 @@
 package com.kulvind3r.stoptime;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
@@ -40,10 +41,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChronometerTick(Chronometer chronometer) {
                 long timeInMillis = SystemClock.elapsedRealtime() - chronometer.getBase();
-
-                String t = formatTime(timeInMillis);
-
-                chronometer.setText(t);
+                updateChronometerDisplay(chronometer, timeInMillis);
             }
         });
 
@@ -55,6 +53,18 @@ public class MainActivity extends AppCompatActivity {
         imageViewStartStopTimer = (ImageView) findViewById(R.id.startStopTimer);
         imageViewStartStopTimer.setOnClickListener(appTimerStartStopListener);
 
+    }
+
+    private void updateChronometerDisplay(Chronometer chronometer, long timeInMillis) {
+        if (timeInMillis < 3600000)
+            chronometer.setTextColor(Color.parseColor("#ff3333"));
+        else if (timeInMillis > 3600000 && timeInMillis < 7200000)
+            chronometer.setTextColor(Color.parseColor("#ff751a"));
+        else if (timeInMillis > 7200000)
+            chronometer.setTextColor(Color.parseColor("#47d147"));
+
+        String t = formatTime(timeInMillis);
+        chronometer.setText(t);
     }
 
     private String formatTime(long timeInMillis) {
@@ -86,8 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTick(long millisUntilFinished) {
-                String t = formatTime(millisUntilFinished);
-                appChronometer.setText(t);
+                updateChronometerDisplay(appChronometer,millisUntilFinished);
             }
 
             @Override
