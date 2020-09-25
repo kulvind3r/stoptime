@@ -74,13 +74,15 @@ public class Utils {
 
     public static long textToTime(String timeString) {
 
-        String hoursString = timeString.split(":")[0].trim();
+        String[] timeArray = timeString.split(":");
+
+        String hoursString = timeArray[0].trim();
         int hours = Integer.parseInt(hoursString);
 
-        String minutesString = timeString.split(":")[1].trim();
+        String minutesString = timeArray[1].trim();
         int minutes = Integer.parseInt(minutesString);
 
-        String secondsString = timeString.split(":")[2].trim();
+        String secondsString = timeArray[2].trim();
         int seconds = Integer.parseInt(secondsString);
 
         long milliseconds = (hours * 3600000) + (minutes * 60000) + (seconds * 1000);

@@ -1,7 +1,6 @@
 package com.kulvind3r.stoptime;
 
 import android.annotation.SuppressLint;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
@@ -11,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -70,20 +70,15 @@ public class MainActivity extends AppCompatActivity {
         imageViewStartStopTimer = findViewById(R.id.startStopTimer);
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
     private void updateChronometerDisplay(Chronometer chronometer, long timeInMillis) {
         if (timeInMillis < 3600000) {
-            chronometer.setTextColor(Color.parseColor("#ff3333"));
-            progressBarCircle.setProgressDrawable(getResources().getDrawable(R.drawable.drawable_circle_red));
+            setChronometerColors(chronometer, R.color.colorRed, R.drawable.drawable_circle_red);
         }
-
         else if (timeInMillis > 3600000 && timeInMillis < 7200000) {
-            chronometer.setTextColor(Color.parseColor("#ff751a"));
-            progressBarCircle.setProgressDrawable(getResources().getDrawable(R.drawable.drawable_circle_amber));
+            setChronometerColors(chronometer, R.color.colorAmber, R.drawable.drawable_circle_amber);
         }
         else if (timeInMillis > 7200000) {
-            chronometer.setTextColor(Color.parseColor("#47d147"));
-            progressBarCircle.setProgressDrawable(getResources().getDrawable(R.drawable.drawable_circle_green));
+            setChronometerColors(chronometer, R.color.colorGreen, R.drawable.drawable_circle_green);
         }
 
         String time = Utils.formatTime(timeInMillis);
@@ -94,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void startTimer() {
         appTimer = new CountDownTimer(currentTime,1000) {
-
             @Override
             public void onTick(long millisUntilFinished) {
                 updateChronometerDisplay(appChronometer,millisUntilFinished);
@@ -165,4 +159,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private void setChronometerColors(Chronometer chronometer, int colorId, int drawableId) {
+        chronometer.setTextColor(ResourcesCompat.getColor(getResources(), colorId, null));
+        progressBarCircle.setProgressDrawable(getResources().getDrawable(drawableId));
+    }
 }
