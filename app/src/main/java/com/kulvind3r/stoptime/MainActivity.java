@@ -14,16 +14,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Utils utility =  new Utils(this);
+
     private Chronometer appChronometer;
     private CountDownTimer appTimer;
-    private Long currentTime;
-
     private ProgressBar progressBarCircle;
     private ImageView imageViewStartStopWatch;
     private ImageView imageViewStartStopTimer;
-
-    private AppStatus appWatchStatus = AppStatus.WATCH_STOPPED;
-    private AppStatus appTimerStatus = AppStatus.TIMER_STOPPED;
 
     private enum AppStatus {
         WATCH_STARTED,
@@ -32,19 +29,20 @@ public class MainActivity extends AppCompatActivity {
         TIMER_STOPPED
     }
 
+    private AppStatus appWatchStatus = AppStatus.WATCH_STOPPED;
+    private AppStatus appTimerStatus = AppStatus.TIMER_STOPPED;
+
+    private Long currentTime;
+    private static final String SAVE_STATE_FILE_NAME = "stopTimeState.txt";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        appChronometer = (Chronometer) findViewById(R.id.chronometer);
-        progressBarCircle = (ProgressBar) findViewById(R.id.progressBarCircle);
-        imageViewStartStopWatch = (ImageView) findViewById(R.id.startStopWatch);
-        imageViewStartStopTimer = (ImageView) findViewById(R.id.startStopTimer);
-
-        imageViewStartStopWatch.setOnClickListener(appWatchStartStopListener);
-        imageViewStartStopTimer.setOnClickListener(appTimerStartStopListener);
+        initialiseViews();
+        initialiseListeners();
 
         progressBarCircle.setMax(10800000); // Max Progress Bar is set to 3 hours
 
@@ -56,7 +54,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        appChronometer.setText("00:00:00");
+        String time = utility.retrieveTimerState(SAVE_STATE_FILE_NAME);
+        appChronometer.setText(time);
+    }
+
+    private void initialiseListeners() {
+        imageViewStartStopWatch.setOnClickListener(appWatchStartStopListener);
+        imageViewStartStopTimer.setOnClickListener(appTimerStartStopListener);
+    }
+
+    private void initialiseViews() {
+        appChronometer = findViewById(R.id.chronometer);
+        progressBarCircle = findViewById(R.id.progressBarCircle);
+        imageViewStartStopWatch = findViewById(R.id.startStopWatch);
+        imageViewStartStopTimer = findViewById(R.id.startStopTimer);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -75,33 +86,10 @@ public class MainActivity extends AppCompatActivity {
             progressBarCircle.setProgressDrawable(getResources().getDrawable(R.drawable.drawable_circle_green));
         }
 
-        String t = formatTime(timeInMillis);
+        String time = Utils.formatTime(timeInMillis);
+        utility.saveTimerState(time, SAVE_STATE_FILE_NAME);
         progressBarCircle.setProgress((int)timeInMillis);
-        chronometer.setText(t);
-    }
-
-    private String formatTime(long timeInMillis) {
-        int hour = (int) (timeInMillis / 3600000);
-        int minute = (int) (timeInMillis - hour * 3600000) / 60000;
-        int seconds = (int) (timeInMillis - hour * 3600000 - minute * 60000) / 1000;
-        return (hour < 10 ? "0" + hour : hour) + ":" + (minute < 10 ? "0" + minute : minute) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-    }
-
-    private long textToTime () {
-        String timeString = (String) appChronometer.getText();
-
-        String hoursString = timeString.split(":")[0].trim();
-        int hours = Integer.parseInt(hoursString) ;
-
-        String minutesString = timeString.split(":")[1].trim();
-        int minutes = Integer.parseInt(minutesString);
-
-        String secondsString = timeString.split(":")[2].trim();
-        int seconds = Integer.parseInt(secondsString);
-
-        long milliseconds = (hours * 3600000) + (minutes * 60000) + (seconds * 1000);
-
-        return milliseconds;
+        chronometer.setText(time);
     }
 
     private void startTimer() {
@@ -153,7 +141,8 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             if (appWatchStatus == AppStatus.WATCH_STOPPED) {
                 stopTimer();
-                currentTime = textToTime();
+                String timeString = (String) appChronometer.getText();
+                currentTime = Utils.textToTime(timeString);
                 startWatch();
             }
             else if (appWatchStatus == AppStatus.WATCH_STARTED) {
@@ -167,7 +156,8 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             if (appTimerStatus == AppStatus.TIMER_STOPPED) {
                 stopWatch();
-                currentTime = textToTime();
+                String timeString = (String) appChronometer.getText();
+                currentTime = Utils.textToTime(timeString);
                 startTimer();
             }
             else if (appTimerStatus == AppStatus.TIMER_STARTED) {
