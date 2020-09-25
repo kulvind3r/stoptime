@@ -1,5 +1,6 @@
 package com.kulvind3r.stoptime;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -7,17 +8,19 @@ import android.os.SystemClock;
 import android.view.View;
 import android.widget.Chronometer;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    Chronometer appChronometer;
-    CountDownTimer appTimer;
-    Long currentTime;
+    private Chronometer appChronometer;
+    private CountDownTimer appTimer;
+    private Long currentTime;
 
-    ImageView imageViewStartStopWatch;
-    ImageView imageViewStartStopTimer;
+    private ProgressBar progressBarCircle;
+    private ImageView imageViewStartStopWatch;
+    private ImageView imageViewStartStopTimer;
 
     private AppStatus appWatchStatus = AppStatus.WATCH_STOPPED;
     private AppStatus appTimerStatus = AppStatus.TIMER_STOPPED;
@@ -36,6 +39,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         appChronometer = (Chronometer) findViewById(R.id.chronometer);
+        progressBarCircle = (ProgressBar) findViewById(R.id.progressBarCircle);
+        imageViewStartStopWatch = (ImageView) findViewById(R.id.startStopWatch);
+        imageViewStartStopTimer = (ImageView) findViewById(R.id.startStopTimer);
+
+        imageViewStartStopWatch.setOnClickListener(appWatchStartStopListener);
+        imageViewStartStopTimer.setOnClickListener(appTimerStartStopListener);
+
+        progressBarCircle.setMax(10800000); // Max Progress Bar is set to 3 hours
 
         appChronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
@@ -46,24 +57,26 @@ public class MainActivity extends AppCompatActivity {
         });
 
         appChronometer.setText("00:00:00");
-
-        imageViewStartStopWatch = (ImageView) findViewById(R.id.startStopWatch);
-        imageViewStartStopWatch.setOnClickListener(appWatchStartStopListener);
-
-        imageViewStartStopTimer = (ImageView) findViewById(R.id.startStopTimer);
-        imageViewStartStopTimer.setOnClickListener(appTimerStartStopListener);
-
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void updateChronometerDisplay(Chronometer chronometer, long timeInMillis) {
-        if (timeInMillis < 3600000)
+        if (timeInMillis < 3600000) {
             chronometer.setTextColor(Color.parseColor("#ff3333"));
-        else if (timeInMillis > 3600000 && timeInMillis < 7200000)
+            progressBarCircle.setProgressDrawable(getResources().getDrawable(R.drawable.drawable_circle_red));
+        }
+
+        else if (timeInMillis > 3600000 && timeInMillis < 7200000) {
             chronometer.setTextColor(Color.parseColor("#ff751a"));
-        else if (timeInMillis > 7200000)
+            progressBarCircle.setProgressDrawable(getResources().getDrawable(R.drawable.drawable_circle_amber));
+        }
+        else if (timeInMillis > 7200000) {
             chronometer.setTextColor(Color.parseColor("#47d147"));
+            progressBarCircle.setProgressDrawable(getResources().getDrawable(R.drawable.drawable_circle_green));
+        }
 
         String t = formatTime(timeInMillis);
+        progressBarCircle.setProgress((int)timeInMillis);
         chronometer.setText(t);
     }
 
