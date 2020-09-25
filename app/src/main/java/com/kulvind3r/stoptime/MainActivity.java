@@ -1,6 +1,7 @@
 package com.kulvind3r.stoptime;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
@@ -9,6 +10,7 @@ import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -21,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBarCircle;
     private ImageView imageViewStartStopWatch;
     private ImageView imageViewStartStopTimer;
+    private ImageView imageViewResetChronometer;
 
     private enum AppStatus {
         WATCH_STARTED,
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private void initialiseListeners() {
         imageViewStartStopWatch.setOnClickListener(appWatchStartStopListener);
         imageViewStartStopTimer.setOnClickListener(appTimerStartStopListener);
+        imageViewResetChronometer.setOnClickListener(appChronometerResetListener);
     }
 
     private void initialiseViews() {
@@ -68,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         progressBarCircle = findViewById(R.id.progressBarCircle);
         imageViewStartStopWatch = findViewById(R.id.startStopWatch);
         imageViewStartStopTimer = findViewById(R.id.startStopTimer);
+        imageViewResetChronometer= findViewById(R.id.resetChronometer);
     }
 
     private void updateChronometerDisplay(Chronometer chronometer, long timeInMillis) {
@@ -96,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFinish() {
+                appChronometer.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorYellow, null));
                 appChronometer.setText("00:00:00");
                 stopTimer();
             }
@@ -157,6 +163,43 @@ public class MainActivity extends AppCompatActivity {
             else if (appTimerStatus == AppStatus.TIMER_STARTED) {
                 stopTimer();
             }
+        }
+    };
+
+    View.OnClickListener appChronometerResetListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogStyle);
+            builder.setTitle("Reset Time");
+            builder.setMessage("Are you sure, this cannot be undone?");
+            builder.setIcon(R.drawable.icon_reset);
+
+            builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    stopTimer();
+                    stopWatch();
+
+                    appChronometer.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorWhite, null));
+                    appChronometer.setText("00:00:00");
+
+                    progressBarCircle.setProgress(0);
+
+                    utility.saveTimerState("00:00:00",SAVE_STATE_FILE_NAME);
+
+                }
+            });
+
+            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+
+            AlertDialog alertDialog = builder.create();
+
+            alertDialog.show();
         }
     };
 
