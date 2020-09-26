@@ -47,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
         initialiseViews();
         initialiseListeners();
 
-        progressBarCircle.setMax(10800000); // Max Progress Bar is set to 3 hours
+        // Max Progress Bar is set to 3 hours
+        progressBarCircle.setMax(10800000);
 
         appChronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
@@ -73,72 +74,6 @@ public class MainActivity extends AppCompatActivity {
         imageViewStartStopWatch = findViewById(R.id.startStopWatch);
         imageViewStartStopTimer = findViewById(R.id.startStopTimer);
         imageViewResetChronometer= findViewById(R.id.resetChronometer);
-    }
-
-    private void updateChronometerDisplay(Chronometer chronometer, long timeInMillis) {
-        if (timeInMillis < 3600000) {
-            setChronometerColors(chronometer, R.color.colorRed, R.drawable.drawable_circle_red);
-        }
-        else if (timeInMillis > 3600000 && timeInMillis < 7200000) {
-            setChronometerColors(chronometer, R.color.colorAmber, R.drawable.drawable_circle_amber);
-        }
-        else if (timeInMillis > 7200000) {
-            setChronometerColors(chronometer, R.color.colorGreen, R.drawable.drawable_circle_green);
-        }
-
-        String time = Utils.formatTime(timeInMillis);
-        utility.saveTimerState(time, SAVE_STATE_FILE_NAME);
-
-        if (timeInMillis < progressBarCircle.getMax())
-            progressBarCircle.setProgress((int)timeInMillis);
-        else
-            progressBarCircle.setProgress(progressBarCircle.getMax());
-
-        chronometer.setText(time);
-    }
-
-    private void startTimer() {
-        appTimer = new CountDownTimer(currentTime,1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                updateChronometerDisplay(appChronometer,millisUntilFinished);
-            }
-
-            @Override
-            public void onFinish() {
-                appChronometer.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorYellow, null));
-                appChronometer.setText("00:00:00");
-                stopTimer();
-            }
-        };
-
-        appTimer.start();
-
-        imageViewStartStopTimer.setImageResource(R.drawable.icon_stop);
-        appTimerStatus = AppStatus.TIMER_STARTED;
-    }
-
-    private void stopTimer() {
-        if (appTimer != null)
-            appTimer.cancel();
-
-        imageViewStartStopTimer.setImageResource(R.drawable.icon_start);
-        appTimerStatus = AppStatus.TIMER_STOPPED;
-    }
-
-    private void startWatch() {
-        appChronometer.setBase(SystemClock.elapsedRealtime() - currentTime);
-        appChronometer.start();
-
-        imageViewStartStopWatch.setImageResource(R.drawable.icon_stop);
-        appWatchStatus = AppStatus.WATCH_STARTED;
-    }
-
-    private void stopWatch() {
-        appChronometer.stop();
-
-        imageViewStartStopWatch.setImageResource(R.drawable.icon_start);
-        appWatchStatus = AppStatus.WATCH_STOPPED;
     }
 
     View.OnClickListener  appWatchStartStopListener = new View.OnClickListener() {
@@ -175,38 +110,113 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialogStyle);
-            builder.setTitle("Reset Time");
-            builder.setMessage("Are you sure, this cannot be undone?");
-            builder.setIcon(R.drawable.icon_reset);
-
-            builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    stopTimer();
-                    stopWatch();
-
-                    appChronometer.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorWhite, null));
-                    appChronometer.setText("00:00:00");
-
-                    progressBarCircle.setProgress(0);
-
-                    utility.saveTimerState("00:00:00",SAVE_STATE_FILE_NAME);
-
-                }
-            });
-
-            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-
+            buildResetDialog(builder);
             AlertDialog alertDialog = builder.create();
-
             alertDialog.show();
         }
     };
+
+    private void startTimer() {
+        appTimer = new CountDownTimer(currentTime,1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                updateChronometerDisplay(appChronometer,millisUntilFinished);
+            }
+
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onFinish() {
+                appChronometer.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorWhite, null));
+                appChronometer.setText("00:00:00");
+                stopTimer();
+            }
+        };
+
+        appTimer.start();
+
+        imageViewStartStopTimer.setImageResource(R.drawable.icon_stop);
+        appTimerStatus = AppStatus.TIMER_STARTED;
+    }
+
+    private void stopTimer() {
+        if (appTimer != null)
+            appTimer.cancel();
+
+        imageViewStartStopTimer.setImageResource(R.drawable.icon_start);
+        appTimerStatus = AppStatus.TIMER_STOPPED;
+    }
+
+    private void startWatch() {
+        appChronometer.setBase(SystemClock.elapsedRealtime() - currentTime);
+        appChronometer.start();
+
+        imageViewStartStopWatch.setImageResource(R.drawable.icon_stop);
+        appWatchStatus = AppStatus.WATCH_STARTED;
+    }
+
+    private void stopWatch() {
+        appChronometer.stop();
+
+        imageViewStartStopWatch.setImageResource(R.drawable.icon_start);
+        appWatchStatus = AppStatus.WATCH_STOPPED;
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void resetChronometer() {
+        stopTimer();
+        stopWatch();
+
+        appChronometer.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorWhite, null));
+        appChronometer.setText("00:00:00");
+
+        progressBarCircle.setProgress(0);
+
+        utility.saveTimerState("00:00:00",SAVE_STATE_FILE_NAME);
+    }
+
+    private void buildResetDialog(AlertDialog.Builder builder) {
+        builder.setTitle("Reset Time");
+        builder.setMessage("Are you sure, this cannot be undone?");
+        builder.setIcon(R.drawable.icon_reset);
+
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                resetChronometer();
+            }
+        });
+
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+    }
+
+    private void updateChronometerDisplay(Chronometer chronometer, long timeInMillis) {
+        if (timeInMillis < 3600000) {
+            setChronometerColors(chronometer, R.color.colorRed, R.drawable.drawable_circle_red);
+        }
+        else if (timeInMillis > 3600000 && timeInMillis < 7200000) {
+            setChronometerColors(chronometer, R.color.colorAmber, R.drawable.drawable_circle_amber);
+        }
+        else if (timeInMillis > 7200000) {
+            setChronometerColors(chronometer, R.color.colorGreen, R.drawable.drawable_circle_green);
+        }
+
+        String time = Utils.formatTime(timeInMillis);
+        utility.saveTimerState(time, SAVE_STATE_FILE_NAME);
+
+        if (timeInMillis < progressBarCircle.getMax())
+            progressBarCircle.setProgress((int)timeInMillis);
+        else
+            // Set a value less than max to keep progress bar filled.
+            progressBarCircle.setProgress(progressBarCircle.getMax() - 1000);
+
+        chronometer.setText(time);
+    }
 
     @SuppressLint("UseCompatLoadingForDrawables")
     private void setChronometerColors(Chronometer chronometer, int colorId, int drawableId) {

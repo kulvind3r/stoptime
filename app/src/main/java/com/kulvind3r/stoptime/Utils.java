@@ -2,7 +2,6 @@ package com.kulvind3r.stoptime;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,8 +19,6 @@ public class Utils {
         try {
             stopTimeStateFileOutputStream = mainActivity.openFileOutput(fileName, MainActivity.MODE_PRIVATE);
             stopTimeStateFileOutputStream.write(time.getBytes());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -46,8 +43,6 @@ public class Utils {
 
             time = stopTimeStateBufferedReader.readLine();
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -85,8 +80,6 @@ public class Utils {
         String secondsString = timeArray[2].trim();
         int seconds = Integer.parseInt(secondsString);
 
-        long milliseconds = (hours * 3600000) + (minutes * 60000) + (seconds * 1000);
-
-        return milliseconds;
+        return (hours * 3600000) + (minutes * 60000) + seconds * 1000;
     }
 }
