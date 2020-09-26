@@ -211,9 +211,12 @@ public class MainActivity extends AppCompatActivity {
 
         if (timeInMillis < progressBarCircle.getMax())
             progressBarCircle.setProgress((int)timeInMillis);
-        else
-            // Set a value less than max to keep progress bar filled.
-            progressBarCircle.setProgress(progressBarCircle.getMax() - 1000);
+        else {
+            // Handle bug where progress drawable disappears when progress hits max.
+            // Progress has to be set to 0 and then again set to max to prevent the issue.
+            progressBarCircle.setProgress(0);
+            progressBarCircle.setProgress(progressBarCircle.getMax());
+        }
 
         chronometer.setText(time);
     }
